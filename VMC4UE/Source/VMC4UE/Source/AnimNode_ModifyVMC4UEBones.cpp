@@ -87,9 +87,23 @@ void FAnimNode_ModifyVMC4UEBones::EvaluateSkeletalControl_AnyThread(FComponentSp
 		// Bone Local
 		// 取得此次迭代處理的骨骼引用
         auto &BoneReference = BoneReferences[BoneIndex.GetInt()];
-		// 次迭代處理的骨骼名字
+		// 此迭代處理的骨骼名字
         const FName &SkeletonBoneName = BoneReference.BoneName;
 		bool bHasMatchBone = false;
+
+		//============================================
+		// 如果串流裡面有目前迭代的骨骼名稱之項
+		if (StreamingSkeletalMeshTransform->Bones.Contains(SkeletonBoneName))
+		{
+			// 串流進來的變換值變數
+			const auto& StreamingData = StreamingSkeletalMeshTransform->Bones[SkeletonBoneName];
+
+			BoneNewTransform *= FTransform(StreamingData.Rotation, StreamingData.Location, FVector(1.0f, 1.0f, 1.0f));
+			bHasMatchBone = true;
+		}
+		//============================================
+
+		/*
 		// 如果從Map中構建的TMap中有此次的骨骼名字這項
 		if (BoneMappingSkeletonToVMC.Contains(SkeletonBoneName))
 		{
@@ -105,6 +119,8 @@ void FAnimNode_ModifyVMC4UEBones::EvaluateSkeletalControl_AnyThread(FComponentSp
 				bHasMatchBone = true;
 			}
 		}
+		// */
+
 		// 如果實際的骨骼物件並不在Map中存在
 		if (!bHasMatchBone)
 		{

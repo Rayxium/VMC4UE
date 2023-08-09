@@ -8,6 +8,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "GenericPlatform/GenericPlatformMath.h"
 
+// 解析OSC進來的資料 處理成位移和旋轉
 void UVMC4UEBlueprintFunctionLibrary::OnReceivedVMC(UVMC4UEStreamingSkeletalMeshTransform *SkeletalMeshTransform, const FName &Address, const TArray<FUEOSCElement> &Data, const FString &SenderIp)
 {
 	if (!IsValid(SkeletalMeshTransform))
@@ -144,6 +145,7 @@ UVMC4UEStreamingSkeletalMeshTransform* UVMC4UEBlueprintFunctionLibrary::GetStrea
 
 		// Bind Port
 		UUEOSCReceiver* OscReceiver = NewObject<UUEOSCReceiver>();
+		// 取得OSC資料內容
 		OscReceiver->OSCReceiveEventDelegate.AddDynamic(NewStreamingSkeletalMeshTransform, &UVMC4UEStreamingSkeletalMeshTransform::OnReceived);
 		OscReceiver->Connect(Port);
 
