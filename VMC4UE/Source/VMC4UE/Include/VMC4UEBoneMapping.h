@@ -7,7 +7,7 @@
 #include "VMC4UEBoneMapping.generated.h"
 
 /**
- *
+ * Map檔
  */
 USTRUCT(BlueprintType)
 struct VMC4UE_API FVMC4UEBoneMapping
