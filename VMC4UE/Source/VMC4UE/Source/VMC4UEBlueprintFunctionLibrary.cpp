@@ -9,6 +9,7 @@
 #include "GenericPlatform/GenericPlatformMath.h"
 
 // 解析OSC進來的資料 處理成位移和旋轉
+// 應該是單根骨骼的數據
 void UVMC4UEBlueprintFunctionLibrary::OnReceivedVMC(UVMC4UEStreamingSkeletalMeshTransform *SkeletalMeshTransform, const FName &Address, const TArray<FUEOSCElement> &Data, const FString &SenderIp)
 {
 	if (!IsValid(SkeletalMeshTransform))
@@ -20,6 +21,7 @@ void UVMC4UEBlueprintFunctionLibrary::OnReceivedVMC(UVMC4UEStreamingSkeletalMesh
 
 	if (AddressString == TEXT("/VMC/Ext/Root/Pos"))
 	{
+		// 如果資料項數少於7 (位移3 四元數4) 則直接return
 		if (Data.Num() < 7)
 		{
 			return;
@@ -29,9 +31,11 @@ void UVMC4UEBlueprintFunctionLibrary::OnReceivedVMC(UVMC4UEStreamingSkeletalMesh
 		FRWScopeLock RWScopeLock(SkeletalMeshTransform->RWLock, FRWScopeLockType::SLT_Write);
 		
 		++Index;
+		// 位移
 		const auto UnityLocationX = Data[Index++].FloatValue;
 		const auto UnityLocationY = Data[Index++].FloatValue;
 		const auto UnityLocationZ = Data[Index++].FloatValue;
+		// 四元數
 		const auto UnityRotationX = Data[Index++].FloatValue;
 		const auto UnityRotationY = Data[Index++].FloatValue;
 		const auto UnityRotationZ = Data[Index++].FloatValue;
@@ -113,6 +117,7 @@ void UVMC4UEBlueprintFunctionLibrary::OnReceivedVMC(UVMC4UEStreamingSkeletalMesh
 	}
 }
 
+// 在EvaluateSkeletalControl_AnyThread(...)裡面調用這個函式
 UVMC4UEStreamingSkeletalMeshTransform* UVMC4UEBlueprintFunctionLibrary::GetStreamingSkeletalMeshTransform(int32 Port)
 {
 	UVMC4UEOSCManager* OSCManager = UVMC4UEOSCManager::GetInstance();

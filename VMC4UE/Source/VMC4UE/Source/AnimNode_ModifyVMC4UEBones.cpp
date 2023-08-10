@@ -40,6 +40,7 @@ void FAnimNode_ModifyVMC4UEBones::GatherDebugData(FNodeDebugData &DebugData)
 
 void FAnimNode_ModifyVMC4UEBones::EvaluateSkeletalControl_AnyThread(FComponentSpacePoseContext &Output, TArray<FBoneTransform> &OutBoneTransforms)
 {
+	// OutBoneTransforms：Component空間
     check(OutBoneTransforms.Num() == 0);
 
 	// Watch VRMMapping
@@ -59,6 +60,7 @@ void FAnimNode_ModifyVMC4UEBones::EvaluateSkeletalControl_AnyThread(FComponentSp
 	
 	// Get SkeletamMesh Transform
 	// 獲得串流進來的整組SkeletalMeshTransform
+	// OnReceivedVMC在這最裡面被調用
 	auto StreamingSkeletalMeshTransform = UVMC4UEBlueprintFunctionLibrary::GetStreamingSkeletalMeshTransform(this->Port);
 	if (!IsValid(StreamingSkeletalMeshTransform))
 	{
@@ -68,6 +70,7 @@ void FAnimNode_ModifyVMC4UEBones::EvaluateSkeletalControl_AnyThread(FComponentSp
 	FRWScopeLock RWScopeLock(StreamingSkeletalMeshTransform->RWLock, FRWScopeLockType::SLT_ReadOnly);
 	
 	// Root
+	// 根骨骼直接Set絕對數值
     FTransform RootTransform;
     {
 		FVMC4UEStreamingBoneTransform &StreamingData = StreamingSkeletalMeshTransform->Root;
@@ -82,6 +85,7 @@ void FAnimNode_ModifyVMC4UEBones::EvaluateSkeletalControl_AnyThread(FComponentSp
 	// 遍歷骨架中所有骨骼的BoneIndex
     for (const auto &BoneIndex : Pose.ForEachBoneIndex())
     {
+		// 變換初始值
         FTransform BoneNewTransform = FTransform::Identity;
 
 		// Bone Local
@@ -98,6 +102,7 @@ void FAnimNode_ModifyVMC4UEBones::EvaluateSkeletalControl_AnyThread(FComponentSp
 			// 串流進來的變換值變數
 			const auto& StreamingData = StreamingSkeletalMeshTransform->Bones[SkeletonBoneName];
 
+			// 變換初始值(推測：可以當歸零的值)疊加上串流進來的資料 推測：為父骨骼空間LocalSpace
 			BoneNewTransform *= FTransform(StreamingData.Rotation, StreamingData.Location, FVector(1.0f, 1.0f, 1.0f));
 			bHasMatchBone = true;
 		}
@@ -129,12 +134,16 @@ void FAnimNode_ModifyVMC4UEBones::EvaluateSkeletalControl_AnyThread(FComponentSp
 		
 		// Parent
         int32 ParentBoneIndex = BoneContainer.GetParentBoneIndex(BoneIndex.GetInt());
-        if (ParentBoneIndex >= 0)
+        // 非根骨骼
+		if (ParentBoneIndex >= 0)
         {
+			// 取得父骨骼的組件空間變換值 並把LocalSpace變換疊加上去
+			// 推測：LocalSpace就是基於父骨骼的變化量(也就是基於父骨骼無變換之下描述) 疊加上父骨骼本身的組件空間變換 就變成在組件空間中的本骨骼變換
             BoneNewTransform *= OutBoneTransforms[ParentBoneIndex].Transform;
         }
         else
         {
+			// 根骨骼 推測：疊加兩次串流資料
             BoneNewTransform *= RootTransform;
         }
 
