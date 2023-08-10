@@ -31,6 +31,27 @@ void UVMC4UEBlueprintFunctionLibrary::OnReceivedVMC(UVMC4UEStreamingSkeletalMesh
 		FRWScopeLock RWScopeLock(SkeletalMeshTransform->RWLock, FRWScopeLockType::SLT_Write);
 		
 		++Index;
+
+		const auto PosX = Data[Index++].FloatValue;
+		const auto PosY = Data[Index++].FloatValue;
+		const auto PosZ = Data[Index++].FloatValue;
+		const auto RotX = Data[Index++].FloatValue;
+		const auto RotY = Data[Index++].FloatValue;
+		const auto RotZ = Data[Index++].FloatValue;
+		const auto RotW = Data[Index++].FloatValue;
+
+		auto& VMCBone = SkeletalMeshTransform->Root;
+
+		VMCBone.Location.X = PosX;
+		VMCBone.Location.Y = PosY;
+		VMCBone.Location.Z = PosZ;
+
+		VMCBone.Rotation.X = RotX;
+		VMCBone.Rotation.Y = RotY;
+		VMCBone.Rotation.Z = RotZ;
+		VMCBone.Rotation.W = RotW;
+
+		/*
 		// 位移
 		const auto UnityLocationX = Data[Index++].FloatValue;
 		const auto UnityLocationY = Data[Index++].FloatValue;
@@ -51,6 +72,7 @@ void UVMC4UEBlueprintFunctionLibrary::OnReceivedVMC(UVMC4UEStreamingSkeletalMesh
 		VMCBone.Rotation.Y = UnityRotationZ;
 		VMCBone.Rotation.Z = UnityRotationY;
 		VMCBone.Rotation.W = UnityRotationW;
+		// */
 
 		//VMCBone.Rotation = FQuat::Identity;
 		
@@ -66,6 +88,27 @@ void UVMC4UEBlueprintFunctionLibrary::OnReceivedVMC(UVMC4UEStreamingSkeletalMesh
 
 		FRWScopeLock RWScopeLock(SkeletalMeshTransform->RWLock, FRWScopeLockType::SLT_Write);
 		
+		const auto Name = Data[Index++].StringValue;
+		const auto PosX = Data[Index++].FloatValue;
+		const auto PosY = Data[Index++].FloatValue;
+		const auto PosZ = Data[Index++].FloatValue;
+		const auto RotX = Data[Index++].FloatValue;
+		const auto RotY = Data[Index++].FloatValue;
+		const auto RotZ = Data[Index++].FloatValue;
+		const auto RotW = Data[Index++].FloatValue;
+
+		auto& VMCBone = SkeletalMeshTransform->Bones.FindOrAdd(Name);
+
+		VMCBone.Location.X = PosX;
+		VMCBone.Location.Y = PosY;
+		VMCBone.Location.Z = PosZ;
+
+		VMCBone.Rotation.X = RotX;
+		VMCBone.Rotation.Y = RotY;
+		VMCBone.Rotation.Z = RotZ;
+		VMCBone.Rotation.W = RotW;
+
+		/*
         const auto BoneName = Data[Index++].StringValue;
         const auto UnityLocationX = Data[Index++].FloatValue;
         const auto UnityLocationY = Data[Index++].FloatValue;
@@ -85,6 +128,7 @@ void UVMC4UEBlueprintFunctionLibrary::OnReceivedVMC(UVMC4UEStreamingSkeletalMesh
 		VMCBone.Rotation.Y = UnityRotationZ;
 		VMCBone.Rotation.Z = UnityRotationY;
 		VMCBone.Rotation.W = UnityRotationW;
+		// */
 
 		//VMCBone.Rotation = FQuat::Identity;
 	}
